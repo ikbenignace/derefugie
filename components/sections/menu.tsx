@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
 type MenuTab = "carte" | "maand" | "vegetarisch" | "kinderen";
@@ -259,7 +259,8 @@ const kidsMenu: MenuCategory[] = [
       },
       {
         name: "Vis van de Maand",
-        description: "Meunière gebakken, warme seizoengroentjes, puree of frietjes",
+        description:
+          "Meunière gebakken, warme seizoengroentjes, puree of frietjes",
       },
       {
         name: "Kinderijsje",
@@ -276,27 +277,55 @@ const menuData: Record<MenuTab, MenuCategory[]> = {
   kinderen: kidsMenu,
 };
 
+function formatPrice(price: string) {
+  return price.includes("p.p.") || price === "per stuk" ? price : `€${price}`;
+}
+
 function MenuItemRow({ item }: { item: MenuItem }) {
   return (
-    <div className="group flex items-baseline justify-between gap-4 py-4 border-b border-border/50 last:border-0">
-      <div className="flex-1">
-        <h4 className="font-serif text-lg font-semibold text-foreground transition-colors group-hover:text-primary sm:text-xl">
+    <div className="group grid grid-cols-[1fr_auto] gap-x-6 gap-y-3 border-b border-border/60 py-5 last:border-0">
+      <div className="min-w-0">
+        <h4 className="font-serif text-xl font-semibold leading-snug text-foreground transition-colors group-hover:text-primary sm:text-2xl">
           {item.name}
         </h4>
         {item.description && (
-          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+          <p className="mt-2 max-w-3xl text-base leading-7 text-muted-foreground">
             {item.description}
           </p>
         )}
       </div>
+
       {item.price && (
-        <span className="shrink-0 text-base font-medium text-primary">
-          {item.price.includes("p.p.") || item.price === "per stuk"
-            ? item.price
-            : `€${item.price}`}
-        </span>
+        <div className="flex items-start justify-end">
+          <span className="inline-flex min-w-[72px] justify-center rounded-full border border-primary/25 bg-primary/8 px-4 py-2 text-base font-medium text-primary sm:min-w-[84px]">
+            {formatPrice(item.price)}
+          </span>
+        </div>
       )}
     </div>
+  );
+}
+
+function MenuCategoryBlock({ category }: { category: MenuCategory }) {
+  return (
+    <section className="rounded-2xl border border-border/70 bg-card/60 p-6 shadow-[0_12px_40px_rgba(0,0,0,0.18)] backdrop-blur-sm sm:p-8">
+      <div className="mb-6 border-b border-border/50 pb-4">
+        <h3 className="font-serif text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+          {category.title}
+        </h3>
+        {category.note && (
+          <p className="mt-3 text-base leading-7 text-primary/85">
+            {category.note}
+          </p>
+        )}
+      </div>
+
+      <div>
+        {category.items.map((item) => (
+          <MenuItemRow key={`${category.title}-${item.name}`} item={item} />
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -304,98 +333,80 @@ export function MenuSection() {
   const [activeTab, setActiveTab] = useState<MenuTab>("carte");
 
   return (
-    <section id="menu" className="relative py-32 lg:py-40">
+    <section id="menu" className="relative py-28 lg:py-36">
       <div className="absolute inset-0 bg-gradient-to-b from-background via-card/50 to-background" />
 
-      <div className="relative mx-auto max-w-5xl px-6 lg:px-12">
+      <div className="relative mx-auto max-w-6xl px-6 lg:px-12">
         <div className="text-center">
           <div className="mb-6 flex items-center justify-center gap-4">
             <span className="h-px w-12 bg-primary/50" />
-            <span className="text-xs tracking-[0.3em] uppercase text-primary">
+            <span className="text-sm uppercase tracking-[0.22em] text-primary sm:text-base">
               Onze Kaart
             </span>
             <span className="h-px w-12 bg-primary/50" />
           </div>
 
-          <h2 className="font-serif text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+          <h2 className="font-serif text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
             Het Menu
           </h2>
 
-          <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
-            Een verfijnde mix van klassiekers en hedendaagse creaties,
-            bereid met seizoensgebonden producten à la minute.
+          <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-muted-foreground sm:text-lg">
+            Een verfijnde selectie van Frans-Belgische klassiekers en
+            seizoensgerechten, met aandacht voor smaak, elegantie en comfort aan
+            tafel.
           </p>
         </div>
 
-        <div className="mt-14 flex flex-wrap items-center justify-center gap-2">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "relative px-5 py-2.5 text-xs tracking-[0.15em] uppercase transition-all duration-300",
-                activeTab === tab.id
-                  ? "border border-primary text-primary"
-                  : "border border-transparent text-muted-foreground hover:text-foreground"
-              )}
+        <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.id;
+
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "rounded-full border px-5 py-3 text-base leading-none transition-all duration-300",
+                  isActive
+                    ? "border-primary bg-primary/12 text-primary shadow-[0_0_0_1px_rgba(196,153,58,0.15)]"
+                    : "border-border/70 bg-card/40 text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                )}
+              >
+                <span className="tracking-[0.08em] uppercase">{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mt-12 overflow-hidden">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="space-y-8"
             >
-              {tab.label}
-            </button>
-          ))}
+              {menuData[activeTab].map((category) => (
+                <MenuCategoryBlock key={category.title} category={category} />
+              ))}
+            </motion.div>
+          </AnimatePresence>
         </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-16"
-          >
-            <div className="space-y-16">
-              {menuData[activeTab].map((category) => (
-                <div key={category.title}>
-                  <div className="mb-6">
-                    <h3 className="font-serif text-2xl font-bold text-foreground sm:text-3xl">
-                      {category.title}
-                    </h3>
-                    {category.note && (
-                      <p className="mt-2 text-sm italic text-primary/80">
-                        {category.note}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    {category.items.map((item) => (
-                      <MenuItemRow key={item.name} item={item} />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </AnimatePresence>
-
-        <div className="mt-16 text-center">
-          <div className="inline-flex items-center gap-4 border border-border bg-card/50 px-8 py-5">
-            <div>
-              <p className="text-sm tracking-[0.15em] uppercase text-foreground">
-                Lunch
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Donderdag & vrijdagmiddag
-              </p>
-            </div>
-            <span className="h-8 w-px bg-border" />
-            <div>
-              <p className="font-serif text-2xl font-bold text-primary">€33</p>
-              <p className="mt-1 text-xs text-muted-foreground">3 gangen</p>
-            </div>
-          </div>
-          <p className="mt-4 text-sm text-muted-foreground">
-            Elke vrijdag is het traditioneel visdag
+        <div className="mt-12 text-center">
+          <p className="text-base leading-7 text-muted-foreground">
+            Wenst u te reserveren voor lunch of diner?
           </p>
+          <button
+            type="button"
+            data-reservation-trigger
+            className="mt-5 inline-flex items-center gap-3 border border-primary bg-primary/10 px-8 py-4 text-base uppercase tracking-[0.16em] text-primary transition-all duration-300 hover:bg-primary hover:text-primary-foreground"
+          >
+            Reserveer uw tafel
+          </button>
         </div>
       </div>
     </section>
