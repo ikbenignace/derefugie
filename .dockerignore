@@ -1,0 +1,17 @@
+.git
+.cursor
+.vscode
+.idea
+agent-transcripts
+terminals
+node_modules
+dist
+.next
+coverage
+.cache
+.env
+.env.*
+*.log
+npm-debug.log*
+bun-debug.log*
+*.tsbuildinfo
