@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-FROM oven/bun:1.2.15-slim AS deps
+FROM oven/bun:slim AS deps
 WORKDIR /app
 
 COPY package.json bun.lock ./
@@ -11,7 +11,7 @@ FROM deps AS build
 COPY . .
 RUN bun run build:vinext
 
-FROM oven/bun:1.2.15-slim AS runner
+FROM oven/bun:slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production \
@@ -23,4 +23,4 @@ COPY --from=build /app/dist ./dist
 
 EXPOSE 3000
 USER 1001:1001
-ENTRYPOINT ["bun", "start:vinext"]
+ENTRYPOINT ["bun", "run", "start:vinext"]
