@@ -20,6 +20,8 @@ ENV NODE_ENV=production \
     HOME=/tmp
 
 COPY --from=build /app/dist ./dist
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json bun.lock ./
 
 EXPOSE 3000
 USER 1001:1001
